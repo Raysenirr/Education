@@ -23,11 +23,16 @@ namespace Education.Domain.Entities
         private readonly Dictionary<Student, DateTime> _submittedBy = new();
         public IReadOnlyDictionary<Student, DateTime> SubmittedBy => _submittedBy;
 
-        public Homework(Lesson lesson, HomeworkTitle title)
-            : base(Guid.NewGuid())
+        protected Homework(Guid id, Lesson lesson, HomeworkTitle title) : base(id)
         {
             Lesson = lesson;
             Title = title;
+        }
+        public Homework(Lesson lesson, HomeworkTitle title) : this(Guid.NewGuid(), lesson, title)
+        {
+        }
+        protected Homework() : base(Guid.NewGuid())
+        {
         }
 
         /// <summary>

@@ -24,6 +24,9 @@ namespace Education.Domain.Entities
         {
 
         }
+        protected Group() : base(Guid.NewGuid())
+        {
+        }
         public void AddStudent(Student student)
         {
             if (_students.Contains(student))
