@@ -1,13 +1,15 @@
-﻿using System;
+﻿using Education.Application.Models.Base;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Education.Application.Models.BaseModel
+namespace Education.Application.Models.Group
 {
-    public abstract class PersonCreateModel : ICreateModel
+    public class CreateGroupModel : ICreateModel
     {
         public required string Name { get; init; }
+
     }
 }

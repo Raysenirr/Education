@@ -7,12 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Application\Models\TeacherModel\" />
-    <Folder Include="Application\Models\GroupModel\" />
-    <Folder Include="Application\Models\StudentModel\" />
-    <Folder Include="Application\Models\LessonModel\" />
-    <Folder Include="Application\Models\GradeModel\" />
     <Folder Include="Application\Services\" />
+    <Folder Include="Infrastructure\EntityFramework\" />
   </ItemGroup>
 
 </Project>
