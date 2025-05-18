@@ -43,7 +43,7 @@ public class DomainLateHomeworkTests
         homework.IsLate(student).Should().BeTrue();
 
         // 8. Преподаватель выставляет оценку
-        teacher.GradeStudent(student, Mark.Excellent, lesson);
+        teacher.GradeStudent(student, Mark.Excellent, lesson, homework);
 
         // 9. Проверяем что оценка понижена
         var grade = student.GetGradeByLesson(lesson);

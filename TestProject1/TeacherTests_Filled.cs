@@ -32,11 +32,11 @@ public class TeacherTests
         var student = new Student(new PersonName("Max"), group);
         var topic = new LessonTopic("Topi аллввщы");
         var lesson = new Lesson(group, teacher, DateTime.UtcNow, topic);
-
+        var homework = new Homework(lesson, new HomeworkTitle("HWsds"));
         teacher.TeachLesson(lesson);
         student.AttendLesson(lesson);
 
-        teacher.GradeStudent(student, Mark.Excellent, lesson);
+        teacher.GradeStudent(student, Mark.Excellent, lesson, homework);
 
         teacher.AssignedGrades.Should().ContainSingle(g => g.Student == student && g.Lesson == lesson);
         student.RecievedGrades.Should().ContainSingle();

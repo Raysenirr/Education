@@ -92,7 +92,7 @@ namespace Education.Domain.Entities
         /// <summary>
         /// Выставить оценку студенту за конкретный урок.
         /// </summary>
-        public void GradeStudent(Student student, Mark mark, Lesson lesson)
+        public void GradeStudent(Student student, Mark mark, Lesson lesson, Homework homework)
         {
             if (lesson.State != LessonStatus.Teached)
                 throw new LessonNotStartedException(lesson);
@@ -103,15 +103,14 @@ namespace Education.Domain.Entities
             if (_grades.Any(g => g.Student == student && g.Lesson == lesson))
                 throw new DoubleGradeStudentLesson(lesson, student);
 
-            // Если студент сдал задание с опозданием — оценка максимум 3
-            var homework = lesson.GetHomeworkByTopic(lesson.Topic);
-            if (homework != null && homework.IsLate(student) && mark > Mark.Satisfactorily)
+            if (homework.IsLate(student) && mark > Mark.Satisfactorily)
                 mark = Mark.Satisfactorily;
 
             var grade = new Grade(this, student, lesson, DateTime.Now, mark);
             student.GetGrade(grade);
             _grades.Add(grade);
         }
+
 
         /// <summary>
         /// Добавить урок в расписание учителя.

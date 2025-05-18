@@ -88,9 +88,9 @@ namespace Education.Domain.Entities
         /// <summary>
         /// Получает домашнее задание по теме (если было назначено).
         /// </summary>
-        public Homework? GetHomeworkByTopic(LessonTopic topic)
+        public Homework? GetHomeworkById(Guid id)
         {
-            return _homeworks.FirstOrDefault(h => h.Title.Value == topic.Value);
+            return _homeworks.FirstOrDefault(h => h.Id == id);
         }
 
         #endregion

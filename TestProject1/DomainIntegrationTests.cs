@@ -38,7 +38,7 @@ public class DomainIntegrationTests
         student.SubmitHomework(homework, submitTime);
 
         // 7. Учитель выставляет оценку
-        teacher.GradeStudent(student, Mark.Excellent, lesson);
+        teacher.GradeStudent(student, Mark.Excellent, lesson, homework);
 
         // 8. Проверка оценки и состояния
         var grade = student.GetGradeByLesson(lesson);

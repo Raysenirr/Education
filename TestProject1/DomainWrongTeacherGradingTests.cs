@@ -14,9 +14,9 @@ public class DomainWrongTeacherGradingTests
     public void GradingByAnotherTeacher_ShouldThrowException()
     {
         // 1. Создание группы, студентов и двух учителей
-        var group = new Group(new GroupName("Group-X"));
-        var realTeacher = new Teacher(new PersonName("Prof. Real"));
-        var fakeTeacher = new Teacher(new PersonName("Prof. Faker"));
+        var group = new Group(new GroupName("G-7-5"));
+        var realTeacher = new Teacher(new PersonName("ProfReal"));
+        var fakeTeacher = new Teacher(new PersonName("ProfFaker"));
         var student = new Student(new PersonName("Rogue"), group);
 
         // 2. Урок назначается реальным учителем
@@ -35,7 +35,7 @@ public class DomainWrongTeacherGradingTests
         student.SubmitHomework(homework, DateTime.UtcNow);
 
         // 6. Попытка фальшивого учителя выставить оценку
-        Action act = () => fakeTeacher.GradeStudent(student, Mark.Good, lesson);
+        Action act = () => fakeTeacher.GradeStudent(student, Mark.Good, lesson, homework);
 
         // 7. Проверка, что выброшено правильное исключение
         act.Should().Throw<AnotherTeacherLessonGradedException>();

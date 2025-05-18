@@ -95,16 +95,17 @@ public class LessonTests
     }
 
     [Fact]
-    public void GetHomeworkByTopic_ShouldReturnCorrectHomework()
+    public void GetHomeworkById_ShouldReturnCorrectHomework()
     {
         var teacher = new Teacher(new PersonName("TTopic"));
         var group = new Group(new GroupName("GTopic-7-1"));
         var topic = new LessonTopic("TopicX");
         var lesson = new Lesson(group, teacher, DateTime.UtcNow, topic);
-        var homework = new Homework(lesson, new HomeworkTitle("TopicX"));
 
+        var homework = new Homework(lesson, new HomeworkTitle("TopicX"));
         lesson.AddHomework(homework);
-        var found = lesson.GetHomeworkByTopic(topic);
+
+        var found = lesson.GetHomeworkById(homework.Id); // ✅ используем реальный Id
 
         found.Should().Be(homework);
     }

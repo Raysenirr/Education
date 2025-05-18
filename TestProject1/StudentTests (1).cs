@@ -53,10 +53,10 @@ public class StudentTests
         var student = new Student(new PersonName("Alice"), group);
         var topic = new LessonTopic("LessonA");
         var lesson = new Lesson(group, teacher, DateTime.UtcNow, topic);
-
+        var homework = new Homework(lesson, new HomeworkTitle("HWsds"));
         teacher.TeachLesson(lesson);
         student.AttendLesson(lesson);
-        teacher.GradeStudent(student, Mark.Excellent, lesson);
+        teacher.GradeStudent(student, Mark.Excellent, lesson, homework);
 
         var grade = student.GetGradeByLesson(lesson);
         grade.Mark.Should().Be(Mark.Excellent);
