@@ -40,14 +40,20 @@ namespace Education.Domain.Entities
         /// </summary>
         public void SubmitBy(Student student, DateTime submissionDate)
         {
+            // 1. Проверка посещения урока
             if (!student.AttendedLessons.Contains(Lesson))
                 throw new LessonNotVisitedException(Lesson, student);
 
+            // 2. Проверка повторной сдачи
             if (_submittedBy.ContainsKey(student))
                 throw new HomeworkAlreadySubmittedException(this);
 
-            // ❌ не блокируем опоздание
-            _submittedBy.Add(student, submissionDate);
+            // 3. Проверка что дата сдачи не в будущем
+            if (submissionDate > DateTime.UtcNow.AddMinutes(1)) // +1 минута как буфер
+                throw new InvalidSubmissionDateException(submissionDate);
+
+            // 4. Фиксация сдачи
+            _submittedBy[student] = submissionDate; // Используем индексатор для обновления если ключ существует
         }
 
 
@@ -60,7 +66,8 @@ namespace Education.Domain.Entities
             if (!_submittedBy.TryGetValue(student, out var submittedDate))
                 return false;
 
-            return submittedDate.Date > Lesson.ClassTime.Date;
+            // Добавляем буфер в 1 секунду для надёжности
+            return submittedDate - Lesson.ClassTime > TimeSpan.FromSeconds(1);
         }
 
     }
