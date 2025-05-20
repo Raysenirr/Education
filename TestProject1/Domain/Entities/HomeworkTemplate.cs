@@ -1,6 +1,6 @@
 ﻿using Education.Domain.ValueObjects;
-using System;
-using Education.Domain.ValueObjects;
+using Education.Domain.Entities.Base;
+using Education.Domain.Exceptions;
 using System;
 
 namespace Education.Domain.Entities
@@ -8,7 +8,7 @@ namespace Education.Domain.Entities
     /// <summary>
     /// Шаблон домашнего задания (Value Object, Owned by HomeworkBank)
     /// </summary>
-    public class HomeworkTemplate
+    public class HomeworkTemplate : Entity<Guid>
     {
         public LessonTopic Topic { get; private set; }
         public HomeworkTitle Title { get; private set; }

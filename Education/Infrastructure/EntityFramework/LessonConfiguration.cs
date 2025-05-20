@@ -20,7 +20,7 @@ public class LessonConfiguration : IEntityTypeConfiguration<Lesson>
         builder.Property(x => x.Topic)
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasConversion(topic => topic.Topic, topic => new LessonTopic(topic));
+                        .HasConversion(topic => topic.Value, topic => new LessonTopic(topic));
         builder.HasOne(x => x.Group).WithMany();
         builder.HasOne(x => x.Teacher).WithMany("_lessons");
     }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Education.Domain.Entities;
+using Education.Domain.Entities.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -23,7 +24,7 @@ public class GradeConfiguration : IEntityTypeConfiguration<Grade>
         ); ;
         builder.HasOne(x => x.Student).WithMany("_grades");
         builder.HasOne(x => x.Teacher).WithMany("_grades");
-        builder.HasOne(x => x.Lesson).WithMany();
+        builder.HasOne(x => x.Lesson).WithMany("Grades");
         builder.Navigation(x => x.Student).AutoInclude();
         builder.Navigation(x => x.Teacher).AutoInclude();
         builder.Navigation(x => x.Lesson).AutoInclude();
