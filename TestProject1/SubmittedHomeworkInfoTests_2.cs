@@ -34,7 +34,7 @@ public class SubmittedHomeworkInfoTests
         var teacher = new Teacher(new PersonName("MrHomework"));
         var student = new Student(new PersonName("StudentH"), group);
         var topic = new LessonTopic("TopicH");
-        var lessonTime = DateTime.UtcNow.AddHours(-2);
+        var lessonTime = DateTime.UtcNow;
         var lesson = new Lesson(group, teacher, lessonTime, topic);
         teacher.TeachLesson(lesson);
         student.AttendLesson(lesson);

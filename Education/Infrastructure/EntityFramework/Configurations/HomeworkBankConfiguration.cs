@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TestProject1.Domain.Abstractions
+namespace Education.Infrastructure.EntityFramework.Configurations
 {
-    internal class IHomeworkRepository
+    internal class HomeworkBankConfiguration
     {
     }
 }

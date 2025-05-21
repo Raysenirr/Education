@@ -24,7 +24,7 @@ namespace Education.Domain.Entities
             SubmittedAt = submittedAt;
         }
 
-        // Конструктор для EF Core (protected)
+        // Конструктор для EF   (protected)
         protected SubmittedHomeworkInfo()
         {
             // Инициализация для EF

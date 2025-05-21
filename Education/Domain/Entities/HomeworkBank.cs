@@ -5,66 +5,75 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections.ObjectModel;
 
 namespace Education.Domain.Entities
 {
     /// <summary>
-    /// Хранилище шаблонов домашних заданий, привязанных к темам.
+    /// Хранилище шаблонов домашних заданий, привязанных к темам уроков.
+    /// Используется как owned entity внутри Teacher.
     /// </summary>
+    public class HomeworkBank
+    {
+        private readonly ICollection<HomeworkTemplate> _templates = new List<HomeworkTemplate>();
 
-        public class HomeworkBank
+        /// <summary>
+        /// Только для EF
+        /// </summary>
+        private HomeworkBank() { }
+
+
+        public HomeworkBank(bool createEmpty = true)
         {
-            private ICollection<HomeworkTemplate> _templates;
+        }
 
-            // Основной защищённый конструктор (для EF и наследования)
-            protected HomeworkBank(Guid id, ICollection<HomeworkTemplate> templates)
-            {
-                Id = id;
-                _templates = templates ?? new List<HomeworkTemplate>();
-            }
+        /// <summary>
+        /// Конструктор для восстановления из БД 
+        /// </summary>
+        protected HomeworkBank(ICollection<HomeworkTemplate> templates)
+        {
+            _templates = templates ?? throw new TemplatesIsNullException();
+        }
 
-            // Публичный конструктор для создания нового банка
-            public HomeworkBank(ICollection<HomeworkTemplate> templates)
-                : this(Guid.NewGuid(), templates)
-            {
-            }
+        /// <summary>
+        /// Получить все шаблоны в виде коллекции
+        /// </summary>
+        public IReadOnlyCollection<HomeworkTemplate> Templates =>
+            new ReadOnlyCollection<HomeworkTemplate>(_templates.ToList());
 
-            // Альтернативный публичный конструктор (удобный API)
-            public HomeworkBank(params HomeworkTemplate[] templates)
-                : this(new List<HomeworkTemplate>(templates))
-            {
-            }
+        /// <summary>
+        /// Добавить новый шаблон задания
+        /// </summary>
+        public void AddTemplate(LessonTopic topic, HomeworkTitle title)
+        {
+            if (topic == null)
+                throw new LessonTopicIsNullException();
 
-            // Защищённый конструктор для EF (минимальная инициализация)
-            protected HomeworkBank() : this(Guid.Empty, new List<HomeworkTemplate>())
-            {
-            }
+            if (title == null)
+                throw new HomeworkTitleIsNullException();
 
-            public Guid Id { get; protected set; }
+            if (_templates.Any(t => t.Topic.Equals(topic)))
+                throw new DuplicateHomeworkTemplateException(topic);
 
-            public IReadOnlyCollection<HomeworkTemplate> Templates =>
-                _templates.ToList().AsReadOnly(); // Создаём новый список для безопасности
+            _templates.Add(new HomeworkTemplate(topic, title));
+        }
 
-            public void AddTemplate(LessonTopic topic, HomeworkTitle title)
-            {
-                if (_templates.Any(t => t.Topic.Value == topic.Value))
-                    throw new DuplicateHomeworkTemplateException(topic);
+        /// <summary>
+        /// Найти шаблон по теме
+        /// </summary>
+        public HomeworkTemplate? FindTemplate(LessonTopic topic)
+        {
+            return _templates.FirstOrDefault(t => t.Topic.Equals(topic));
+        }
 
-                _templates.Add(new HomeworkTemplate(topic, title));
-            }
-
-            public HomeworkTemplate? FindTemplate(LessonTopic topic)
-            {
-                return _templates.FirstOrDefault(t => t.Topic.Value == topic.Value);
-            }
-
-            public bool RemoveTemplate(LessonTopic topic)
-            {
-                var template = _templates.FirstOrDefault(t => t.Topic.Value == topic.Value);
-                return template != null && _templates.Remove(template);
-            }
+        /// <summary>
+        /// Удалить шаблон по теме
+        /// </summary>
+        public bool RemoveTemplate(LessonTopic topic)
+        {
+            var template = _templates.FirstOrDefault(t => t.Topic.Equals(topic));
+            return template != null && _templates.Remove(template);
         }
     }
+}
+

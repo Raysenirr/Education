@@ -16,33 +16,31 @@ namespace Education.Domain.Entities
     {
         private readonly ICollection<Lesson> _lessons = [];
         private readonly ICollection<Grade> _grades = [];
-        private readonly ICollection<Homework> _submittedHomeworks = [];
 
         public IReadOnlyCollection<Lesson> AttendedLessons => [.. _lessons];
         public IReadOnlyCollection<Grade> RecievedGrades => [.. _grades];
-        public IReadOnlyCollection<Homework> SubmittedHomeworks => [.. _submittedHomeworks];
 
         public Group Group { get; protected set; }
+
         #region Construct
+
         protected Student(Guid id, PersonName name, Group group) : base(id, name)
         {
-            Group = group;
+            Group = group ?? throw new GroupIsNullException();
+
             if (!group.Students.Contains(this))
                 group.AddStudent(this);
         }
 
-        public Student(PersonName name, Group group) : this(Guid.NewGuid(), name, group)
-        {
-        }
+        public Student(PersonName name, Group group)
+            : this(Guid.NewGuid(), name, group) { }
 
-        protected Student(Guid id, PersonName name) : base(id, name)
-        {
-        }
+        protected Student(Guid id, PersonName name) : base(id, name) { }
+
         #endregion
-        #region Mehtods
-        /// <summary>
-        /// Отметить посещение урока.
-        /// </summary>
+
+        #region Methods
+
         public void AttendLesson(Lesson lesson)
         {
             if (lesson.State != LessonStatus.Teached)
@@ -57,9 +55,6 @@ namespace Education.Domain.Entities
             _lessons.Add(lesson);
         }
 
-        /// <summary>
-        /// Сдать домашнее задание на проверку.
-        /// </summary>
         public void SubmitHomework(Homework homework, DateTime submissionDate)
         {
             if (homework == null)
@@ -71,16 +66,13 @@ namespace Education.Domain.Entities
             if (!_lessons.Contains(homework.Lesson))
                 throw new LessonNotVisitedException(homework.Lesson, this);
 
-            if (_submittedHomeworks.Contains(homework))
+            // Теперь проверяем по `Homework.Submissions`
+            if (homework.Submissions.Any(s => s.StudentId == Id))
                 throw new HomeworkAlreadySubmittedException(homework);
 
             homework.SubmitBy(this, submissionDate);
-            _submittedHomeworks.Add(homework);
         }
 
-        /// <summary>
-        /// Получить оценку за конкретный урок.
-        /// </summary>
         public Grade GetGradeByLesson(Lesson lesson)
         {
             if (lesson == null)
@@ -94,9 +86,6 @@ namespace Education.Domain.Entities
             return grade;
         }
 
-        /// <summary>
-        /// Внутренний метод получения оценки от учителя.
-        /// </summary>
         internal void GetGrade(Grade grade)
         {
             if (grade.Student != this)
@@ -110,6 +99,7 @@ namespace Education.Domain.Entities
 
             _grades.Add(grade);
         }
+
         public IReadOnlyCollection<Homework> GetAssignedHomeworks()
         {
             var result = new List<Homework>();

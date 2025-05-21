@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Education.Domain.Entities.Base;
-using Education.Domain.Entities;
 using Education.Domain.ValueObjects;
 using Education.Domain.Enums;
 using System.Diagnostics;
 using Education.Domain.Exceptions;
 using System.Xml.Linq;
+using System.Collections.ObjectModel;
+
 
 namespace Education.Domain.Entities
 {
@@ -18,38 +19,31 @@ namespace Education.Domain.Entities
     /// </summary>
     public class Teacher : Person
     {
-        // Проведённые учителем уроки
-        private readonly ICollection<Lesson> _lessons = [];
+        private readonly ICollection<Lesson> _lessons = new List<Lesson>();
+        private readonly ICollection<Grade> _grades = new List<Grade>();
+        private readonly HomeworkBank _homeworkBank;
 
-        // Поставленные оценки
-        private readonly ICollection<Grade> _grades = [];
-
-        // Личный банк шаблонов домашних заданий
-        private readonly HomeworkBank _homeworkBank = new();
         public HomeworkBank HomeworkBank => _homeworkBank;
 
-        // Уроки, которые были проведены
         public IReadOnlyCollection<Lesson> TeachedLessons =>
             _lessons.Where(l => l.State == LessonStatus.Teached).ToList().AsReadOnly();
 
-        // Уроки, запланированные к проведению
-        public IReadOnlyCollection<Lesson> SchedulledLessons =>
+        public IReadOnlyCollection<Lesson> ScheduledLessons =>
             _lessons.Where(l => l.State == LessonStatus.New).ToList().AsReadOnly();
 
-        // Все выставленные оценки
-        public IReadOnlyCollection<Grade> AssignedGrades => [.. _grades];
-
+        public IReadOnlyCollection<Grade> AssignedGrades =>
+            _grades.ToList().AsReadOnly();
 
         #region Constructors
 
         /// <summary>
-        /// Основной конструктор с полями (для EF, восстановления из БД).
+        /// Конструктор для восстановления из БД (Entity Framework).
         /// </summary>
         protected Teacher(Guid id, PersonName name, ICollection<Lesson> lessons, ICollection<Grade> grades, HomeworkBank homeworkBank)
-            : base(id, name)
+    : base(id, name)
         {
-            _lessons = lessons ?? new List<Lesson>();
-            _grades = grades ?? new List<Grade>();
+            _lessons = lessons ?? new Collection<Lesson>();
+            _grades = grades ?? new Collection<Grade>();
             _homeworkBank = homeworkBank ?? new HomeworkBank();
         }
 
@@ -69,12 +63,8 @@ namespace Education.Domain.Entities
 
         #endregion
 
+        #region Поведение
 
-
-
-        /// <summary>
-        /// Провести урок и отметить его как завершённый.
-        /// </summary>
         public void TeachLesson(Lesson lesson)
         {
             if (lesson.State == LessonStatus.Teached)
@@ -89,9 +79,6 @@ namespace Education.Domain.Entities
                 _lessons.Add(lesson);
         }
 
-        /// <summary>
-        /// Выставить оценку студенту за конкретный урок.
-        /// </summary>
         public void GradeStudent(Student student, Mark mark, Lesson lesson, Homework homework)
         {
             if (lesson.State != LessonStatus.Teached)
@@ -106,15 +93,11 @@ namespace Education.Domain.Entities
             if (homework.IsLate(student) && mark > Mark.Satisfactorily)
                 mark = Mark.Satisfactorily;
 
-            var grade = new Grade(this, student, lesson, DateTime.Now, mark);
+            var grade = new Grade(this, student, lesson, DateTime.UtcNow, mark);
             student.GetGrade(grade);
             _grades.Add(grade);
         }
 
-
-        /// <summary>
-        /// Добавить урок в расписание учителя.
-        /// </summary>
         internal void ScheduleLesson(Lesson lesson)
         {
             if (lesson.State != LessonStatus.New)
@@ -124,9 +107,6 @@ namespace Education.Domain.Entities
                 _lessons.Add(lesson);
         }
 
-        /// <summary>
-        /// Назначить домашнее задание из личного банка по теме урока.
-        /// </summary>
         public Homework AssignHomeworkFromBank(Lesson lesson)
         {
             var template = _homeworkBank.FindTemplate(lesson.Topic);
@@ -139,25 +119,16 @@ namespace Education.Domain.Entities
             return homework;
         }
 
-        /// <summary>
-        /// Получить все группы, в которых ведёт уроки этот учитель.
-        /// </summary>
         public IReadOnlyCollection<Group> GetTeachedGroups()
         {
             return _lessons.Select(l => l.Group).Distinct().ToList().AsReadOnly();
         }
 
-        /// <summary>
-        /// Получить всех студентов, которых учитель учит (через группы).
-        /// </summary>
         public IReadOnlyCollection<Student> GetTeachedStudents()
         {
             return _lessons.SelectMany(l => l.Group.Students).Distinct().ToList().AsReadOnly();
         }
 
-        /// <summary>
-        /// Получить все сданные домашние задания для уроков этого учителя.
-        /// </summary>
         public IReadOnlyCollection<SubmittedHomeworkInfo> GetSubmittedHomeworks()
         {
             var result = new List<SubmittedHomeworkInfo>();
@@ -166,14 +137,16 @@ namespace Education.Domain.Entities
             {
                 foreach (var homework in lesson.AssignedHomeworks)
                 {
-                    foreach (var (student, date) in homework.SubmittedBy)
+                    foreach (var submission in homework.Submissions)
                     {
-                        result.Add(new SubmittedHomeworkInfo(homework, student, date));
+                        result.Add(new SubmittedHomeworkInfo(homework, submission.Student, submission.SubmissionDate));
                     }
                 }
             }
 
             return result.AsReadOnly();
         }
+
+        #endregion
     }
 }

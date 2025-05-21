@@ -26,9 +26,12 @@ public class HomeworkTests
         var homework = new Homework(lesson, title);
         lesson.AddHomework(homework);
 
-        homework.SubmitBy(student, DateTime.UtcNow);
+        var submissionTime = DateTime.UtcNow;
+        homework.SubmitBy(student, submissionTime);
 
-        homework.SubmittedBy.Should().ContainKey(student);
+        var submission = homework.Submissions.SingleOrDefault(s => s.StudentId == student.Id);
+        submission.Should().NotBeNull();
+        submission!.SubmissionDate.Should().Be(submissionTime);
     }
 
     [Fact]
@@ -79,8 +82,8 @@ public class HomeworkTests
         var student = new Student(new PersonName("SHW"), group);
         var topic = new LessonTopic("TopicHW");
 
-        var lessonDate = DateTime.UtcNow.Date;                   // Сегодня
-        var submissionDate = DateTime.UtcNow.Date.AddDays(1);    // Завтра
+        var lessonDate = DateTime.UtcNow.AddMinutes(-2); // урок был 2 минуты назад
+        var submissionDate = lessonDate.AddSeconds(2);   // сдача через 2 сек после урока
 
         var lesson = new Lesson(group, teacher, lessonDate, topic);
         teacher.TeachLesson(lesson);
@@ -91,8 +94,9 @@ public class HomeworkTests
 
         homework.SubmitBy(student, submissionDate);
 
-        homework.IsLate(student).Should().BeTrue(); // ✅ всё сработает, урок не в прошлом
+        homework.IsLate(student).Should().BeTrue();
     }
+
 
     [Fact]
     public void IsLate_ShouldReturnFalse_WhenSubmittedOnSameDay()
@@ -102,16 +106,17 @@ public class HomeworkTests
         var student = new Student(new PersonName("SHW"), group);
         var topic = new LessonTopic("TopicHW");
 
-        var today = DateTime.UtcNow.Date;
-        var lesson = new Lesson(group, teacher, today, topic);
+        var lessonDate = DateTime.UtcNow.AddMinutes(1);
+        var lesson = new Lesson(group, teacher, lessonDate, topic);
         teacher.TeachLesson(lesson);
         student.AttendLesson(lesson);
 
         var homework = new Homework(lesson, new HomeworkTitle("HW-OnTime"));
         lesson.AddHomework(homework);
 
-        homework.SubmitBy(student, today);
+        homework.SubmitBy(student, lessonDate); // сдача в момент урока
 
         homework.IsLate(student).Should().BeFalse();
     }
+
 }

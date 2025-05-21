@@ -166,9 +166,9 @@ namespace Education.Domain.Entities
             {
                 foreach (var homework in lesson.AssignedHomeworks)
                 {
-                    foreach (var (student, date) in homework.SubmittedBy)
+                    foreach (var submission in homework.Submissions)
                     {
-                        result.Add(new SubmittedHomeworkInfo(homework, student, date));
+                        result.Add(new SubmittedHomeworkInfo(homework, submission.Student, submission.SubmissionDate));
                     }
                 }
             }

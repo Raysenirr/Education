@@ -1,12 +1,12 @@
-﻿using Education.Domain.ValueObjects;
-using System;
+﻿using Education.Domain.Exceptions;
 using Education.Domain.ValueObjects;
 using System;
+
 
 namespace Education.Domain.Entities
 {
     /// <summary>
-    /// Шаблон домашнего задания (Value Object, Owned by HomeworkBank)
+    /// Шаблон домашнего задания (Owned by HomeworkBank)
     /// </summary>
     public class HomeworkTemplate
     {
@@ -18,12 +18,12 @@ namespace Education.Domain.Entities
         /// </summary>
         public HomeworkTemplate(LessonTopic topic, HomeworkTitle title)
         {
-            Topic = topic ?? throw new ArgumentNullException(nameof(topic));
-            Title = title ?? throw new ArgumentNullException(nameof(title));
+            Topic = topic ?? throw new LessonTopicIsNullException();
+            Title = title ?? throw new HomeworkTitleIsNullException();
         }
 
         /// <summary>
-        /// EF Core требует конструктор без параметров.
+        /// EF 
         /// </summary>
         protected HomeworkTemplate()
         {
@@ -32,19 +32,19 @@ namespace Education.Domain.Entities
         }
 
         /// <summary>
-        /// Обновление темы (опционально, если шаблон может изменяться).
+        /// Обновление темы.
         /// </summary>
         public void UpdateTopic(LessonTopic newTopic)
         {
-            Topic = newTopic ?? throw new ArgumentNullException(nameof(newTopic));
+            Topic = newTopic ?? throw new LessonTopicIsNullException();
         }
 
         /// <summary>
-        /// Обновление заголовка (опционально, если шаблон может изменяться).
+        /// Обновление заголовка.
         /// </summary>
         public void UpdateTitle(HomeworkTitle newTitle)
         {
-            Title = newTitle ?? throw new ArgumentNullException(nameof(newTitle));
+            Title = newTitle ?? throw new HomeworkTitleIsNullException();
         }
     }
 }

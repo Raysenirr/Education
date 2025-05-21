@@ -18,7 +18,7 @@ public class DomainLateHomeworkTestsa
     public void LateSubmission_ShouldBeDetected()
     {
         // Arrange
-        var lessonTime = DateTime.UtcNow.AddHours(-2);
+        var lessonTime = DateTime.UtcNow;
         var submissionTime = lessonTime.AddMinutes(1);
 
         var group = new Group(new GroupName("Phys-10-12"));

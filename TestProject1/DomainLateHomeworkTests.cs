@@ -21,7 +21,7 @@ public class DomainLateHomeworkTests
         var student = new Student(new PersonName("Scott Summers"), group);
 
         // 2. Урок был 2 часа назад (чётко в прошлом)
-        var lessonDate = now.AddHours(-2);
+        var lessonDate = now;
         var topic = new LessonTopic("Optics");
         var lesson = new Lesson(group, teacher, lessonDate, topic);
 

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System;
+using Education.Domain.Entities.Base;
+using Education.Domain.Exceptions;
 
 namespace Education.Domain.Entities
 {
@@ -12,29 +14,37 @@ namespace Education.Domain.Entities
     /// </summary>
     public class SubmittedHomeworkInfo
     {
-        public Homework Homework { get; private set; }
-        public Student Student { get; private set; }
-        public DateTime SubmittedAt { get; private set; }
+        public Homework Homework { get; }
+        public Student Student { get; }
+        public DateTime SubmittedAt { get; }
+        public bool IsLate { get; }
 
-        // Основной публичный конструктор
+        /// <summary>
+        /// Основной конструктор
+        /// </summary>
         public SubmittedHomeworkInfo(Homework homework, Student student, DateTime submittedAt)
         {
-            Homework = homework ?? throw new ArgumentNullException(nameof(homework));
-            Student = student ?? throw new ArgumentNullException(nameof(student));
+            Homework = homework ?? throw new HomeworkIsNullException();
+            Student = student ?? throw new StudentIsNullException();
             SubmittedAt = submittedAt;
-        }
-
-        // Конструктор для EF Core (protected)
-        protected SubmittedHomeworkInfo()
-        {
-            // Инициализация для EF
-            Homework = null!;
-            Student = null!;
+            IsLate = submittedAt > homework.Lesson.ClassTime.AddSeconds(1);
         }
 
         /// <summary>
-        /// Проверяет, было ли задание сдано с опозданием
+        /// Для БД
         /// </summary>
-        public bool IsLate => SubmittedAt > Homework.Lesson.ClassTime;
+        public SubmittedHomeworkInfo(HomeworkSubmission submission)
+            : this(submission.Homework, submission.Student, submission.SubmissionDate)
+        {
+        }
+
+        /// <summary>
+        /// Конструктор для EF 
+        /// </summary>
+        private SubmittedHomeworkInfo()
+        {
+            Homework = null!;
+            Student = null!;
+        }
     }
 }
