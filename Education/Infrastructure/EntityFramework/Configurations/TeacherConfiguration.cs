@@ -3,41 +3,64 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Education.Domain.Entities;
-using Education.Domain.ValueObjects;
+using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Education.Domain.Entities;
+using Education.Domain.ValueObjects;
 
-namespace Education.Infrastructure.EntityFramework.Configurations;
-
-public class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
+namespace Education.Infrastructure.EntityFramework.Configurations
 {
-    public void Configure(EntityTypeBuilder<Teacher> builder)
+    public class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
     {
-        // Ключ
-        builder.HasKey(x => x.Id);
-        builder.Property(x => x.Id).ValueGeneratedOnAdd();
+        public void Configure(EntityTypeBuilder<Teacher> builder)
+        {
+            // Ключ
+            builder.HasKey(x => x.Id);
+            builder.Property(x => x.Id).ValueGeneratedOnAdd();
 
-        // Имя (Value Object)
-        builder.Property(x => x.Name)
-            .HasConversion(name => name.Value, name => new PersonName(name))
-            .IsRequired()
-            .HasMaxLength(50);
+            // Имя преподавателя (Value Object)
+            builder.Property(x => x.Name)
+                   .HasConversion(
+                       name => name.Value,
+                       value => new PersonName(value)
+                   )
+                   .IsRequired()
+                   .HasMaxLength(50);
 
-        // Приватная коллекция уроков, через поле
-        builder.Navigation("_lessons")
-            .UsePropertyAccessMode(PropertyAccessMode.Field);
+            // Навигации к приватным полям
+            builder.Metadata.FindNavigation("_lessons")!
+                   .SetPropertyAccessMode(PropertyAccessMode.Field);
 
-        // Приватная коллекция оценок
-        builder.Navigation("_grades")
-            .UsePropertyAccessMode(PropertyAccessMode.Field);
+            builder.Metadata.FindNavigation("_grades")!
+                   .SetPropertyAccessMode(PropertyAccessMode.Field);
 
-        // Игнорировать вычисляемые свойства (проекции)
-        builder.Ignore(x => x.TeachedLessons);
-        builder.Ignore(x => x.SchedulledLessons);
-        builder.Ignore(x => x.AssignedGrades);
+            // HomeworkBank — owned type
+            builder.OwnsOne(x => x.HomeworkBank, bank =>
+            {
+                // Навигация к приватной коллекции шаблонов
+                bank.Navigation("_templates")
+                    .UsePropertyAccessMode(PropertyAccessMode.Field);
 
-        // Маппинг HomeworkBank (если он сущность)
-        builder.OwnsOne(x => x.HomeworkBank); // если HomeworkBank — Value Object или композиция
+                // Конфигурация коллекции шаблонов
+                var templatesBuilder = bank.OwnsMany<HomeworkTemplate>("_templates", template =>
+                {
+                    template.Property(t => t.Topic)
+                           .HasConversion(t => t.Value, v => new LessonTopic(v))
+                           .HasMaxLength(100)
+                           .IsRequired();
+
+                    template.Property(t => t.Title)
+                           .HasConversion(t => t.Value, v => new HomeworkTitle(v))
+                           .HasMaxLength(100)
+                           .IsRequired();
+
+                    template.WithOwner().HasForeignKey("TeacherId");
+                    template.HasKey("TeacherId", "Topic");
+                });
+
+                templatesBuilder.ToTable("HomeworkTemplates"); // ← сюда перенесено
+            });
+        }
     }
 }

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Education.Domain.Entities;
 using Education.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
@@ -20,20 +16,36 @@ namespace Education.Infrastructure.EntityFramework.Configurations
 
             // Маппинг имени (Value Object)
             builder.Property(x => x.Name)
-                .HasConversion(name => name.Value, name => new PersonName(name))
-                .IsRequired()
-                .HasMaxLength(50);
+                   .HasConversion(
+                       name => name.Value,
+                       value => new PersonName(value)
+                   )
+                   .IsRequired()
+                   .HasMaxLength(50);
 
             // Связь с группой
             builder.HasOne(x => x.Group)
-                .WithMany(x => x.Students)
-                .IsRequired();
+                   .WithMany(x => x.Students)
+                   .IsRequired();
 
             builder.Navigation(x => x.Group).AutoInclude();
 
-            // Приватная коллекция посещённых уроков
-            builder.HasMany("_lessons")
-                .WithMany() 
+            // Приватная коллекция посещённых уроков (many-to-many)
+            builder.HasMany<Lesson>("_lessons")
+                   .WithMany()
+                   .UsingEntity(j => j.ToTable("StudentLessons"));
+
+            builder.Metadata.FindNavigation("_lessons")!
+                   .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+            // Приватная коллекция оценок (one-to-many)
+            builder.HasMany<Grade>("_grades")
+                   .WithOne(g => g.Student)
+                   .HasForeignKey("StudentId")
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Metadata.FindNavigation("_grades")!
+                   .SetPropertyAccessMode(PropertyAccessMode.Field);
         }
     }
 }

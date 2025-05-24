@@ -32,13 +32,13 @@ namespace Education.Domain.Entities
             {
             }
 
-            // Альтернативный публичный конструктор (удобный API)
+            // Публичный конструктор
             public HomeworkBank(params HomeworkTemplate[] templates)
                 : this(new List<HomeworkTemplate>(templates))
             {
             }
 
-            // Защищённый конструктор для EF (минимальная инициализация)
+            // Защищённый конструктор для EF
             protected HomeworkBank() : this(Guid.Empty, new List<HomeworkTemplate>())
             {
             }

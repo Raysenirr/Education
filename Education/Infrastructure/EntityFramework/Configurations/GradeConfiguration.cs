@@ -28,5 +28,6 @@ public class GradeConfiguration : IEntityTypeConfiguration<Grade>
         builder.Navigation(x => x.Student).AutoInclude();
         builder.Navigation(x => x.Teacher).AutoInclude();
         builder.Navigation(x => x.Lesson).AutoInclude();
+        builder.HasIndex(x => new { x.Student.Id, x.Lesson }).IsUnique();
     }
 }
